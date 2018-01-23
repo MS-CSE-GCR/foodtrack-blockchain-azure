@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link href="/node_modules/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+
+<body>
+    <div id="app">
+       
+        <v-app id="inspire" blue>
+                <v-navigation-drawer clipped fixed v-model="drawer" app>
+                    <v-list dense v-for="(menu, idx) in menus">
+                        
+                        <v-list-tile @click="router.push({ path: menu.path })">
+                            <v-list-tile-action>
+                                <v-icon>settings</v-icon>
+                            </v-list-tile-action>
+                            <v-list-tile-content>
+                                <v-list-tile-title>{{menu.title}}</v-list-tile-title>
+                            </v-list-tile-content>
+                        </v-list-tile>
+
+                    </v-list>
+                </v-navigation-drawer>
+            <v-toolbar app fixed clipped-left>
+                <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
+                <v-toolbar-title>App</v-toolbar-title>
+            </v-toolbar>
+            <v-content>
+                <v-container fluid >
+                    <router-view></router-view>
+                </v-container>
+            </v-content>
+            <v-footer app fixed>
+                <span>&copy; 2017</span>
+            </v-footer>
+        </v-app>
+
+
+    </div>
+    <script src="/node_modules/vue/dist/vue.min.js"></script>
+    <script src="/node_modules/vuex/dist/vuex.min.js"></script>
+    <script src="/node_modules/axios/dist/axios.min.js"></script>
+    <script src="/node_modules/vue-router/dist/vue-router.min.js"></script>
+    <script src="/node_modules/babel-standalone/babel.min.js"></script>
+    <script src="/node_modules/vuetify/dist/vuetify.js"></script>
+
+    <script type="text/babel" src="./model2comp.js"></script>
+    <script type="text/babel" src="/modelmeta"></script>
+    
+    <script type="text/babel">
+            Vue.component("hello", {
+                template: `<h1>Welcome</h1>`
+            });
+            const routes = [
+                { name: "hello", path: '/hello', component: { template: '<hello></hello>' } },
+            ];
+            const menus = []
+            // model2view(Schema.hello, routes, menus)
+            // model2view(Schema.hello2, routes, menus)
+            // model2view(Schema.entA, routes, menus)
+            // model2view(Schema.entB, routes, menus)
+            // model2view(Schema.entC, routes, menus)
+
+            for(let model of models) {
+                model2view(model, routes, menus)
+                window.Schema = window.Schema || {};
+                window.Schema[model.name] = model
+            }
+
+            const router = new VueRouter({
+                routes: routes
+            })
+
+
+            const vm = new Vue({
+                    el: '#app',
+                    router: router,
+                    data: () => ({
+                        drawer: null,
+                        menus: menus
+                    }),
+                    props: {
+                        // source: String
+                    },
+                    mounted: function () {
+                        router.push({ name: 'hello' })
+                        const that = this;
+                        
+
+                    },
+                    computed:{
+
+                    }
+                })
+
+            // axios({
+            //     method: 'get',
+            //     url: '/modelmeta',
+            //     responseType: 'text',
+            // }).then(function (response) {
+            //     const models = response.data;
+            //     console.log(models)
+            //     for(let model of models) {
+            //         model2view(model, routes, menus)
+            //     }
+
+               
+
+            // }).catch(function (error) {
+            //     console.log(error)
+            // });
+
+            
+
+    </script>
+
+</body>
+
+</html>

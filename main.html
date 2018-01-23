@@ -8,10 +8,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link href="node_modules/vuetify/dist/vuetify.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
-    <style>
-
-    </style>
 </head>
 
 <body>
@@ -58,6 +54,9 @@
     <script type="text/babel" src="js/model2comp.js"></script>
     <script type="text/babel" src="model/hello.model.js"></script>
     <script type="text/babel" src="model/hello2.model.js"></script>
+    <script type="text/babel" src="model/a.model.js"></script>
+    <script type="text/babel" src="model/b.model.js"></script>
+    <script type="text/babel" src="model/c.model.js"></script>
     
     
     <script type="text/babel">
@@ -68,8 +67,11 @@
                 { name: "hello", path: '/hello', component: { template: '<hello></hello>' } },
             ];
             const menus = []
-            model2createview(Schema.hello, routes, menus)
-            model2createview(Schema.hello2, routes, menus)
+            model2view(Schema.hello, routes, menus)
+            model2view(Schema.hello2, routes, menus)
+            model2view(Schema.entA, routes, menus)
+            model2view(Schema.entB, routes, menus)
+            model2view(Schema.entC, routes, menus)
 
             const router = new VueRouter({
                 routes: routes
