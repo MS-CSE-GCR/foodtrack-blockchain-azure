@@ -4,4 +4,4 @@
 
     node server.js
 
-[http://localhost:3000/public/index.html](http://localhost:3000/public/index.html)
+[http://localhost:3000/public/main.html](http://localhost:3000/public/main.html)
