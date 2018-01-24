@@ -1,6 +1,8 @@
 Vue.component("signin-view", {
+    store:store,
     template: `
     <form>
+        <h3>Sign In</h3>
         <v-text-field
             v-model="name"
             label="User Name"
@@ -21,10 +23,10 @@ Vue.component("signin-view", {
 
         <v-btn @click="submit">submit</v-btn>
         <v-btn @click="clear">clear</v-btn>
-        <v-btn @click="clear">Sign Up</v-btn>
+        <v-btn @click=" router.push({ name: 'signup' })">Sign Up</v-btn>
     </form>
     `,
-    store: store,
+
 
     data () {
       return {
@@ -34,9 +36,26 @@ Vue.component("signin-view", {
     },
     methods: {
       submit () {
-        this.$store.commit("signin", {usr:this.name,pwd:this.password})
-        this.clear();
-        router.push({ name: 'account' })
+        let that = this;
+        axios({
+            method: 'post',
+            url: '/login',
+            responseType: 'json',
+            data: {
+                username:this.name,
+                password:this.password,
+            }
+        }).then(function (response) {
+            that.clear();
+            console.log(response.data)
+            store.commit('setToken', response.data)
+            router.push({ name: 'hello' })
+            
+        }).catch(function (error) {
+            console.log(error);
+            alert(error.response.data.message)
+            store.commit('addError', error.response.data)
+        });
       },
       clear () {
         this.name = ''

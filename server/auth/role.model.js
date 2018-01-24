@@ -7,7 +7,7 @@
         ],
         list: {
             title:'usrname',
-            desc:desc
+            desc:'desc'
         },
         title:'Role',
         callback:{

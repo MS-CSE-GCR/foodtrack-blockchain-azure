@@ -1,4 +1,4 @@
-function server(config, port) {
+function server(config, cb) {
     const express = require('express')
     // const mongoose = require("./mongoose.js")
     var mongoose = require('mongoose');
@@ -21,41 +21,95 @@ function server(config, port) {
 
     if(config.auth) {
         const authfunc = require("./auth/auth.js")
-        auth = authfunc({secret:config.secret, dayForTokenExpiration:config.dayForTokenExpiration})
-
         const usermodel = require("./auth/user.model.js")
         const rolemodel = require("./auth/role.model.js")
-        model2api(usermodel, router, mongoose, auth)
-        model2api(rolemodel, router, mongoose, auth)
+        const User = model2api(usermodel, router, mongoose, auth)
+        const Role = model2api(rolemodel, router, mongoose, auth)
+
+        auth = authfunc({secret:config.secret, dayForTokenExpiration:config.dayForTokenExpiration}, User)
+        if(config.role && config.role.length>0) {
+
+            function roles2api(objs) {
+                const roles = [];
+                for(let obj of objs) {
+                    roles.push({value:obj._id,text:obj.name})
+                }
+                app.get('/role', (req, res)=>{
+                    res.status(200).json(roles);
+                });
+                return;
+            }
+            Role.find({})
+                .exec()
+                .then(objs => {
+                    if(!objs || objs.length==0) {
+                        Role.create(config.role).
+                        then(function (objs) {
+                            console.log("create role successfully!")
+                            roles2api(objs)
+                            return;
+                        }).
+                        catch(error => {
+                            console.log(error)
+                            return;
+                        });
+                    } else {
+                        console.log("load role successfully!")
+                        roles2api(objs)
+                        return
+                    }
+                })
+                .catch(error => {
+                    console.log(error)
+                    return;
+                });
+        }
+
+
         
-        router.post('/login', auth.login);
-        router.post('/register', auth.register);
+        app.post('/login', auth.login);
+        app.post('/register', auth.register);
     }
 
     
     const models = [];
+    const dbhelper = {};
     for(let modelpath of config.models) {
         const model = require(modelpath)
-        model2api(model, router, mongoose, auth)
+        dbhelper[model.name] = model2api(model, router, mongoose, auth)
         models.push(model);
     }
 
     app.get('/modelmeta', function(req, res) {
-        res.status(200).send(`const models = ${JSON.stringify(models, null, 4)}`);
+        const code = `
+            const models = ${JSON.stringify(models, null, 4)};
+            const auth = ${config.auth};
+        `;
+        res.status(200).send(code);
     });
 
     app.use('/api', router);
-    app.listen(port || 3000, () => console.log('app listening on port 3000!'))
+
+    function next() {
+        app.listen(config.port || 3000, () => console.log('app listening on port 3000!'))
+    }
+    if(cb)
+        cb(models, dbhelper, next);
+    else
+        next()    
+    
 }
 
 server({
     'databaseURI':'mongodb://localhost:27017/test',
     'secret': 'thisIsTopSecret',
     'dayForTokenExpiration' : 7,
-    'auth':false,
+    'auth':true,
+    'role':[{name:'admin', desc:'admin'},{name:'user', desc:'user'}],
     'models':[
         '../model/a.model.js',
         '../model/b.model.js',
-        '../model/c.model.js'
+        '../model/c.model.js',
+        '../model/d.model.js'
     ]
 })

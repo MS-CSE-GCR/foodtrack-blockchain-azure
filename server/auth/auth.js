@@ -1,21 +1,24 @@
 const jwt         = require('jwt-simple');
 const bcrypt      = require('bcrypt');
-const mongoose = require("..//mongoose.js")
+
 // const config      = require('../server/config');
-const usermodel = require('./user.model.js')
-const userschema = new Schema({}, { timestamps: { createdAt: 'created_at' } } );
-for (let i = 0; i < model.schema.length; i++) {
-    userschema.add(model.schema[i])
-}
-const User = mongoose.model(usermodel.name, userschema);
+
 
 /**
  * Routers for authentication: /login, /register, /password
  * @type {{login: auth.login, register: auth.register, validateUser: auth.validateUser}}
  */
 
-const auth = function(config) {
-        
+const auth = function(config, User) {
+    
+    // const usermodel = require('./user.model.js')
+    // const Schema = mongoose.Schema;
+    // const userschema = new Schema({}, { timestamps: { createdAt: 'created_at' } } );
+    // for (let i = 0; i < usermodel.schema.length; i++) {
+    //     userschema.add(usermodel.schema[i])
+    // }
+    // const User = mongoose.model(usermodel.name, userschema);
+
     /**
      * This method generates JWT string using username
      * @param user
@@ -76,7 +79,8 @@ const auth = function(config) {
 
             // Find the user
             User.findOne({username: username})
-                .select('+password')// select all fields but additionaly password, because its select = false in the model
+                //.select('+password')// select all fields but additionaly password, because its select = false in the model
+                .populate('role', 'name')
                 .exec(function (err, user) {
 
                     // If error exists or user could't be found
@@ -186,6 +190,7 @@ const auth = function(config) {
         validateUser: function(username, callback) {
             process.nextTick(function() {
                 User.findOne({username: username})
+                // .populate('role')
                     .exec(function (err, user) {
                         callback(err, user);
                     });

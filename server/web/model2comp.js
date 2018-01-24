@@ -32,7 +32,10 @@ function model2view(model, rountes, menus) {
                         axios({
                             method: 'get',
                             url: '/api/' + props[0].ref,
-                            responseType: 'json'
+                            responseType: 'json',
+                            headers:{
+                                "x-access-token":store.state.token?store.state.token.token:''
+                            }
                         }).then(function (response) {
                             var array = [];
                             for(let i=0;i<response.data.length;i++) {
@@ -45,6 +48,7 @@ function model2view(model, rountes, menus) {
                             cb(array);
                         }).catch(function (error) {
                             console.log(error)
+                            store.commit('addError', error)
                         });
                     }
                 }
@@ -86,7 +90,10 @@ function model2view(model, rountes, menus) {
                         axios({
                             method: 'get',
                             url: '/api/' + props.ref,
-                            responseType: 'json'
+                            responseType: 'json',
+                            headers:{
+                                "x-access-token":store.state.token?store.state.token.token:''
+                            }
                         }).then(function (response) {
                             var array = [];
                             for(let i=0;i<response.data.length;i++) {
@@ -99,6 +106,7 @@ function model2view(model, rountes, menus) {
                             cb(array);
                         }).catch(function (error) {
                             console.log(error)
+                            store.commit('addError', error)
                         });
                     }
                 }
@@ -109,6 +117,10 @@ function model2view(model, rountes, menus) {
 
     }
     const createtemplate = `<form>
+    <v-btn small fab dark color="indigo" @click="router.push({ name: '${modelName}-list' })">
+    <v-icon dark>arrow_back</v-icon>
+    </v-btn>
+
         <h3>Create ${modelName}</h3>
         <p><p>
         ${fields.join("")}
@@ -119,6 +131,7 @@ function model2view(model, rountes, menus) {
 
     const createview = {
         template: createtemplate,
+        store:store,
         data() {
             return {
                 dataobj:dataobj,
@@ -132,13 +145,17 @@ function model2view(model, rountes, menus) {
                     method: 'put',
                     url: '/api/' + modelName,
                     responseType: 'json',
-                    data: that.dataobj
+                    data: that.dataobj,
+                    headers:{
+                        "x-access-token":store.state.token?store.state.token.token:''
+                    }
 
                 }).then(function (response) {
                     that.clear();
                     router.push({ name: `${modelName}-list` })
                 }).catch(function (error) {
                     console.log(error)
+                    store.commit('addError', error)
                 });
                 // this.$store.commit("add_farm_operator", dataobj)
                 // this.clear();
@@ -159,7 +176,12 @@ function model2view(model, rountes, menus) {
     const listview = {
         template: `
         <div>
-        <v-btn block color="secondary" @click="gotoCreateView">Add ${modelName}</v-btn>
+
+
+        <v-btn small fab dark color="indigo" @click="gotoCreateView">
+        <v-icon dark>add</v-icon>
+        </v-btn>
+
         <v-list two-line subheader>
         <v-subheader>${modelName}</v-subheader>
         <v-list-tile avatar v-for="(obj, idx) in objs" @click="gotoEditView(obj._id)">
@@ -171,6 +193,7 @@ function model2view(model, rountes, menus) {
         </v-list>
         </div>
         `,
+        store:store,
         data() {
             return {
                 objs: []
@@ -182,11 +205,15 @@ function model2view(model, rountes, menus) {
                 axios({
                     method: 'get',
                     url: '/api/' + modelName,
-                    responseType: 'json'
+                    responseType: 'json',
+                    headers:{
+                        "x-access-token":store.state.token?store.state.token.token:''
+                    }
                 }).then(function (response) {
                     that.objs = response.data;
                 }).catch(function (error) {
                     console.log(error)
+                    store.commit('addError', error)
                 });
             },
             gotoEditView(id) {
@@ -204,7 +231,11 @@ function model2view(model, rountes, menus) {
     }
     // Vue.component(`${modelName}-editview`, {
     const updatetemplate = `<form>
-        <v-btn @click="router.push({ name: '${modelName}-list' })">Back</v-btn>
+    <v-btn small fab dark color="indigo" @click="router.push({ name: '${modelName}-list' })">
+        <v-icon dark>arrow_back</v-icon>
+        </v-btn>
+
+
         <h3>Update ${modelName}</h3>
         <p><p>
         ${fields.join("")}
@@ -216,6 +247,7 @@ function model2view(model, rountes, menus) {
     </form>`;
     const editview = {
         props:["id"],
+        store:store,
         template: updatetemplate,
         data() {
             return {
@@ -230,13 +262,17 @@ function model2view(model, rountes, menus) {
                     method: 'post',
                     url: '/api/' + modelName+'/'+that.id,
                     responseType: 'json',
-                    data: that.dataobj
+                    data: that.dataobj,
+                    headers:{
+                        "x-access-token":store.state.token?store.state.token.token:''
+                    }
 
                 }).then(function (response) {
                     that.clear();
                     router.push({ name: `${modelName}-list` })
                 }).catch(function (error) {
                     console.log(error)
+                    store.commit('addError', error)
                 });
                 // this.$store.commit("add_farm_operator", dataobj)
                 // this.clear();
@@ -247,13 +283,17 @@ function model2view(model, rountes, menus) {
                 axios({
                     method: 'delete',
                     url: '/api/' + modelName+'/'+that.id,
-                    responseType: 'json'
+                    responseType: 'json',
+                    headers:{
+                        "x-access-token":store.state.token?store.state.token.token:''
+                    }
 
                 }).then(function (response) {
                     that.clear();
                     router.push({ name: `${modelName}-list` })
                 }).catch(function (error) {
                     console.log(error)
+                    store.commit('addError', error)
                 });
                 // this.$store.commit("add_farm_operator", dataobj)
                 // this.clear();
@@ -269,11 +309,15 @@ function model2view(model, rountes, menus) {
                 axios({
                     method: 'get',
                     url: '/api/' + modelName+'/'+that.id,
-                    responseType: 'json'
+                    responseType: 'json',
+                    headers:{
+                        "x-access-token":store.state.token?store.state.token.token:''
+                    }
                 }).then(function (response) {
                     that.dataobj = response.data;
                 }).catch(function (error) {
                     console.log(error)
+                    store.commit('addError', error)
                 });
             },
         },

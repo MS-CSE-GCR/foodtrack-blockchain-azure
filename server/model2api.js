@@ -24,12 +24,12 @@ module.exports = function(model, router, mongoose, auth) {
     function save(req, res) {
         var objs = Array.isArray(req.body)?req.body:[req.body];
         if(model.callback && model.callback["before_save"]) {
-            model.callback["before_save"](objs)
+            model.callback["before_save"](objs, clz)
         }
         clz.create(objs).
             then(function (objs) {
                 if(model.callback && model.callback["after_save"]) {
-                    model.callback["after_save"](objs)
+                    model.callback["after_save"](objs, clz)
                 }
                 res.status(200).json(objs || []);
                 return;
@@ -42,7 +42,7 @@ module.exports = function(model, router, mongoose, auth) {
     }
     function update(req, res) {
         if(model.callback && model.callback["before_update"]) {
-            model.callback["before_update"](req.params.id, req.body)
+            model.callback["before_update"](req.params.id, req.body, clz)
         }
         clz.update({_id:req.params.id}, req.body, { multi: true }, (err, numAffected)=>{
             if(err) {
@@ -50,7 +50,7 @@ module.exports = function(model, router, mongoose, auth) {
             }
             else {
                 if(model.callback && model.callback["after_update"]) {
-                    model.callback["after_update"](req.params.id, req.body, numAffected)
+                    model.callback["after_update"](req.params.id, req.body, numAffected, clz)
                 }   
                 res.status(200).json({});
             }
@@ -71,14 +71,14 @@ module.exports = function(model, router, mongoose, auth) {
     }
     function deleteObj(req, res) {
         if(model.callback && model.callback["before_delete"]) {
-            model.callback["before_delete"](req.params.id)
+            model.callback["before_delete"](req.params.id, clz)
         }
         clz.findByIdAndRemove(req.params.id, (err, obj)=>{
             if(err)
                 res.status(500).send(error);
             else {   
                 if(model.callback && model.callback["after_delete"]) {
-                    model.callback["after_delete"](req.params.id)
+                    model.callback["after_delete"](req.params.id, clz)
                 }
                 res.status(200).json({});
             }
@@ -95,7 +95,10 @@ module.exports = function(model, router, mongoose, auth) {
             return;
         } 
         var permission = model.auth[type];
-
+        if(!permission || permission.length==0) {
+            next();
+            return;
+        } 
         // Get the access-token from the header
         var token = (req.body && req.body.access_token) || (req.query && req.query.access_token) || req.headers['x-access-token'];
     
@@ -126,7 +129,7 @@ module.exports = function(model, router, mongoose, auth) {
                     if(user) {
                         for(var i=0;i<userRole.length;i++){
                             for(var j=0;j<permission.length;j++){
-                                if(permission[j]===userRole[i]) {
+                                if(permission[j]===userRole[i].name) {
                                     hasRole = true;
                                     break;
                                 }
@@ -171,7 +174,7 @@ module.exports = function(model, router, mongoose, auth) {
             res.status(400);
             res.json({
                 "status": 400,
-                "message": "Bad Request: No Access Token exist"
+                "message": "Bad Request: No Access Token exist, please Sign In"
             });
             return;
         }
@@ -203,4 +206,5 @@ module.exports = function(model, router, mongoose, auth) {
         deleteObj(req, res)
     });
 
+    return clz;
 }

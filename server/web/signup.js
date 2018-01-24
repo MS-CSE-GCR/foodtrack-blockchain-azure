@@ -1,6 +1,7 @@
 Vue.component("signup-view", {
     template: `
     <form>
+        <h3>Sign Up</h3>
         <v-text-field
             v-model="name"
             label="User Name"
@@ -26,43 +27,68 @@ Vue.component("signup-view", {
             type="password"
         ></v-text-field>
         <v-select
-            v-bind:items="types"
-            v-model="type"
-            label="Type"
-            autocomplete
+            v-bind:items="roles"
+            v-model="role"
+            label="Role"
+            multiple
         ></v-select>
 
         <v-btn @click="submit">submit</v-btn>
         <v-btn @click="clear">clear</v-btn>
-        <v-btn @click="clear">Sign In</v-btn>
+        <v-btn @click="router.push({ name: 'signin' })">Sign In</v-btn>
     </form>
     `,
-    store: store,
+
 
     data () {
       return {
         name: '',
         password: '',
         password2: '',
-        types:['Farm','Packing','Logistics','Retailer','Admin'],
-        type:'Farm'
+        roles:[],
+        role:[]
       }
     },
     methods: {
       submit () {
-        this.$store.commit("signup", {usr:this.name,pwd:this.password,type:this.type})
-        this.clear();
-        router.push({ name: 'signin' })
+        let that = this;
+        axios({
+            method: 'post',
+            url: '/register',
+            responseType: 'json',
+            data: {
+                username:this.name,
+                password:this.password,
+                role:this.role
+            }
+        }).then(function (response) {
+            that.clear();
+            router.push({ name: 'signin' })
+        }).catch(function (error) {
+            console.log(error);
+            alert(error.response.data.message)
+        });
+        
       },
       clear () {
         this.name = ''
         this.password = ''
         this.password2 = ''
-        this.type = 'Farm'
+        this.role = []
+        this.roles = []
       }
     },
 
     mounted () {
-
+        var that = this;
+        axios({
+            method: 'get',
+            url: '/role',
+            responseType: 'json'
+        }).then(function (response) {
+            that.roles = response.data;
+        }).catch(function (error) {
+            console.log(error)
+        });
     }
 });

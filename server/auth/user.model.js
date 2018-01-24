@@ -1,10 +1,10 @@
 (()=>{
     const model = {
-        name: 'entA',
+        name: 'user',
         schema: [
             { username: {type: 'string', required: true} },
             { password: {type: 'string', required: true, password:true} },
-            { role: { type: 'ObjectId', ref: 'role' } }
+            { role: [{ type: 'ObjectId', ref: 'role' }] }
         ],
         list: {
             title:'username',
